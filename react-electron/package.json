@@ -13,6 +13,7 @@
     "electron-is-dev": "^3.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-router-dom": "^7.9.5",
     "react-scripts": "5.0.1",
     "wait-on": "^9.0.1",
     "web-vitals": "^5.1.0"
