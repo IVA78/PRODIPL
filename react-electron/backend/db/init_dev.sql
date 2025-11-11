@@ -42,7 +42,10 @@ CREATE TABLE IF NOT EXISTS Images (
 INSERT OR IGNORE INTO Images (id, filename, method) VALUES 
 ('img-uuid-1', 'image1.png', 'original'),
 ('img-uuid-2', 'image1_bw.png', 'grayscale'),
-('img-uuid-3', 'image1_colorized_methodA.png', 'methodA');
+('img-uuid-3', 'image1_colorized_methodA.png', 'methodA'),
+('img-uuid-4', 'image2.png', 'original'),
+('img-uuid-5', 'image2_bw.png', 'grayscale'),
+('img-uuid-6', 'image2_colorized_methodB.png', 'methodB');
 
 -- ----- RATINGS -----
 CREATE TABLE IF NOT EXISTS Ratings (

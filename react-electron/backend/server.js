@@ -6,6 +6,9 @@ const fs = require("fs");
 const app = express();
 const PORT = 3001;
 
+// --- Posluživanje slika
+app.use("/images", express.static(path.join(__dirname, "images")));
+
 // --- Kreiraj folder db ako ne postoji ---
 const dbDir = path.resolve(__dirname, "db");
 if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir);
@@ -53,6 +56,33 @@ app.get("/api/test-users", (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
+});
+
+// --- Test dohvat slika
+app.get("/api/images", (req, res) => {
+  const baseDir = path.join(__dirname, "images");
+
+  try {
+    const methods = fs.readdirSync(baseDir); // folders inside /images (original, grayscale, metodoA...)
+
+    const result = methods.map((method) => {
+      const methodDir = path.join(baseDir, method);
+      const files = fs.readdirSync(methodDir);
+
+      return {
+        method,
+        images: files.map((fname) => ({
+          filename: fname,
+          url: `http://localhost:3001/images/${method}/${fname}`,
+        })),
+      };
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error("Greška čitanja slika:", error);
+    res.status(500).json({ error: "Ne mogu pročitati slike." });
+  }
 });
 
 // --- Pokreni server ---
