@@ -2,9 +2,13 @@ const express = require("express");
 const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 const fs = require("fs");
+const cors = require("cors");
 
 const app = express();
 const PORT = 3001;
+
+// --- CORS
+app.use(cors());
 
 // --- Posluživanje slika
 app.use("/images", express.static(path.join(__dirname, "images")));
@@ -45,6 +49,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
+// --- TESTNI ENDPOINTI
+
 // --- Test ruta ---
 app.get("/api/test", (req, res) => {
   res.json({ message: "Backend radi ✅" });
@@ -58,7 +64,17 @@ app.get("/api/test-users", (req, res) => {
   });
 });
 
-// --- Test dohvat slika
+// -- ENDPOINTI ZA APLIKACIJU
+
+// --- Dohvat korisnika ---
+app.get("/api/users", (req, res) => {
+  db.all("SELECT * FROM users", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+// --- Dohvat slika ---
 app.get("/api/images", (req, res) => {
   const baseDir = path.join(__dirname, "images");
 
@@ -83,6 +99,21 @@ app.get("/api/images", (req, res) => {
     console.error("Greška čitanja slika:", error);
     res.status(500).json({ error: "Ne mogu pročitati slike." });
   }
+});
+
+// --- Dohvat ocjena ---
+app.get("/api/ratings", (req, res) => {
+  const query = `
+    SELECT 
+      r.id, r.user_id, r.image_id, r.score, r.time_ms, r.timestamp,
+      i.filename, i.method
+    FROM Ratings r
+    JOIN Images i ON r.image_id = i.id
+  `;
+  db.all(query, [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
 });
 
 // --- Pokreni server ---
