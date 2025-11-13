@@ -13,6 +13,17 @@ import {
   Button,
 } from "@chakra-ui/react";
 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  ScatterChart,
+  Scatter,
+} from "recharts";
+
 function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [ratings, setRatings] = useState([]);
@@ -124,12 +135,37 @@ function AdminDashboard() {
     setIsExporting(false);
   };
 
+  function aggregateByMethod(ratings) {
+    const grouped = ratings.reduce((acc, r) => {
+      if (!acc[r.method]) acc[r.method] = { totalScore: 0, count: 0 };
+      acc[r.method].totalScore += r.score;
+      acc[r.method].count += 1;
+      return acc;
+    }, {});
+
+    return Object.entries(grouped).map(([method, data]) => ({
+      method,
+      avgScore: data.totalScore / data.count,
+      count: data.count,
+    }));
+  }
+
+  const aggregatedData = aggregateByMethod(ratings);
+
   // --- Unikatne vrijednosti za filtere
   const uniqueMethods = [...new Set(ratings.map((r) => r.method))].filter(
     Boolean
   );
   const uniqueImages = [...new Set(ratings.map((r) => r.filename))];
   const uniqueUsers = users || [];
+
+  const points = ratings.map((r) => ({
+    x: uniqueImages.indexOf(r.filename), // numerički index za X osu
+    y: r.score,
+    filename: r.filename,
+    method: r.method,
+    user: r.user_id,
+  }));
 
   return (
     <Box p={8} bg="linear-gradient(to right, #d9dfb6, #edf0da)" minH="100vh">
@@ -186,9 +222,6 @@ function AdminDashboard() {
         p={2}
         textAlign="center"
       >
-        <Heading size="l" mb={1}>
-          🔍 Filteri
-        </Heading>
         <Text color="gray.600" mb={3}>
           Odaberi metodu, sliku i korisnika
         </Text>
@@ -430,6 +463,53 @@ function AdminDashboard() {
             </Button>
           )}
         </Box>
+      </Box>
+
+      <Box bg="white" shadow="md" borderRadius="xl" p={4} mt={2}>
+        <Heading>Vizualizacije</Heading>
+        <SimpleGrid p={10} m={5} columns={{ base: 1, md: 1, lg: 2 }}>
+          <Box w="100%" h={{ base: "300px", md: "500px" }} p={5}>
+            <Heading>Prosječna ocjena po metodi</Heading>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={aggregatedData}>
+                <XAxis dataKey="method" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="avgScore" fill="#84a59d" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
+
+          <Box w="100%" h={{ base: "300px", md: "500px" }} p={5}>
+            <Heading>Raspon ocjena po slici</Heading>
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart>
+                <XAxis
+                  type="number"
+                  dataKey="x"
+                  tick={({ x, y, payload }) => (
+                    <text
+                      x={x}
+                      y={y + 10}
+                      textAnchor="end"
+                      transform={`rotate(-45, ${x}, ${y})`}
+                      fontSize={12}
+                    >
+                      {uniqueImages[payload.value]}
+                    </text>
+                  )}
+                />
+                <YAxis type="number" dataKey="y" />
+                <Tooltip
+                  cursor={{ strokeDasharray: "3 3" }}
+                  formatter={(value, name, props) => [value, "Score"]}
+                  labelFormatter={(label) => uniqueImages[label]}
+                />
+                <Scatter data={points} fill="#38A169" />
+              </ScatterChart>
+            </ResponsiveContainer>
+          </Box>
+        </SimpleGrid>
       </Box>
     </Box>
   );
