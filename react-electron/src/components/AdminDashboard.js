@@ -19,6 +19,8 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(5);
 
+  const [isExporting, setIsExporting] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -69,6 +71,45 @@ function AdminDashboard() {
 
   // Dohvat podataka za prikaz
   const visibleRatings = ratings.slice(0, visibleCount);
+
+  const handleExport = () => {
+    setIsExporting(true);
+
+    // Formatiraj podatke s imenima korisnika
+    const data = ratings.map((r) => {
+      const user = users.find((u) => u.id === r.user_id);
+      return {
+        User: user ? user.name : "Nepoznato",
+        Img_name: r.filename || r.image_id,
+        Method: r.method || "-",
+        Rate: r.score,
+        Time_ms: r.time_ms,
+        Timestamp: new Date(r.timestamp).toLocaleString("hr-HR"),
+      };
+    });
+
+    // Generiraj CSV
+    const headers = Object.keys(data[0]);
+    const csvRows = [
+      headers.join(","),
+      ...data.map((row) =>
+        headers.map((field) => JSON.stringify(row[field] ?? "")).join(",")
+      ),
+    ];
+    const csvData = csvRows.join("\n");
+
+    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "ratings_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setIsExporting(false);
+  };
 
   return (
     <Box p={8} bg="linear-gradient(to right, #d9dfb6, #edf0da)" minH="100vh">
@@ -128,7 +169,7 @@ function AdminDashboard() {
         <Box overflowX="auto">
           {/* Header */}
           <SimpleGrid
-            columns={6}
+            columns={7}
             bg="#a0b36f"
             p={2}
             fontWeight="bold"
@@ -140,6 +181,7 @@ function AdminDashboard() {
             <Text>Metoda</Text>
             <Text>Ocjena</Text>
             <Text>Vrijeme (ms)</Text>
+            <Text>Datum i vrijeme</Text>
             <Text>Pregled</Text>
           </SimpleGrid>
 
@@ -150,7 +192,7 @@ function AdminDashboard() {
             return (
               <SimpleGrid
                 key={r.id}
-                columns={6}
+                columns={7}
                 bg="white"
                 p={2}
                 mb={1}
@@ -163,6 +205,7 @@ function AdminDashboard() {
                 <Text>{r.method || "-"}</Text>
                 <Text>{r.score}</Text>
                 <Text>{r.time_ms}</Text>
+                <Text>{new Date(r.timestamp).toLocaleString("hr-HR")}</Text>
                 <Box>
                   {r.filename && r.method && (
                     <Image
@@ -181,6 +224,7 @@ function AdminDashboard() {
           {visibleCount < ratings.length && (
             <Button
               mt={4}
+              ml={4}
               onClick={loadMore}
               bg="#a0b36f" // osnovna boja
               color="black"
@@ -200,6 +244,33 @@ function AdminDashboard() {
               shadow="sm"
             >
               Učitaj još
+            </Button>
+          )}
+          {/* Gumb za izvoz u CSV format */}
+          {visibleCount < ratings.length && (
+            <Button
+              onClick={handleExport}
+              isLoading={isExporting}
+              mt={4}
+              ml={4}
+              bg="#a0b36f" // osnovna boja
+              color="black"
+              fontWeight="bold"
+              _hover={{
+                bg: "#7b904f", // tamnija verzija
+                transform: "scale(1.05)",
+                boxShadow: "md",
+              }}
+              _active={{
+                bg: "#7b904f", // ista tamnija boja pri kliku
+                transform: "scale(0.98)",
+              }}
+              borderRadius="xl"
+              px={6}
+              py={3}
+              shadow="sm"
+            >
+              Izvezi u CSV formatu
             </Button>
           )}
         </Box>
