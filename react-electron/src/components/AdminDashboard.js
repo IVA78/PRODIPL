@@ -21,6 +21,22 @@ function AdminDashboard() {
 
   const [isExporting, setIsExporting] = useState(false);
 
+  // Filteri
+  const [methodFilter, setMethodFilter] = useState("");
+  const [userFilter, setUserFilter] = useState("");
+  const [imageFilter, setImageFilter] = useState("");
+
+  // Filtriranje prije "slice"-anja
+  const filteredRatings = ratings.filter((r) => {
+    const matchesMethod = methodFilter ? r.method === methodFilter : true;
+    const matchesUser = userFilter ? r.user_id === userFilter : true;
+    const matchesImage = imageFilter ? r.filename === imageFilter : true;
+    return matchesMethod && matchesUser && matchesImage;
+  });
+
+  // Onda prikaži samo dio
+  const visibleRatings = filteredRatings.slice(0, visibleCount);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -69,9 +85,6 @@ function AdminDashboard() {
     setVisibleCount((prev) => prev + 5);
   };
 
-  // Dohvat podataka za prikaz
-  const visibleRatings = ratings.slice(0, visibleCount);
-
   const handleExport = () => {
     setIsExporting(true);
 
@@ -110,6 +123,13 @@ function AdminDashboard() {
 
     setIsExporting(false);
   };
+
+  // --- Unikatne vrijednosti za filtere
+  const uniqueMethods = [...new Set(ratings.map((r) => r.method))].filter(
+    Boolean
+  );
+  const uniqueImages = [...new Set(ratings.map((r) => r.filename))];
+  const uniqueUsers = users || [];
 
   return (
     <Box p={8} bg="linear-gradient(to right, #d9dfb6, #edf0da)" minH="100vh">
@@ -157,6 +177,112 @@ function AdminDashboard() {
           </Box>
         ))}
       </SimpleGrid>
+
+      <Box
+        bg="white"
+        shadow="lg"
+        borderRadius="2xl"
+        mt={2}
+        p={2}
+        textAlign="center"
+      >
+        <Heading size="l" mb={1}>
+          🔍 Filteri
+        </Heading>
+        <Text color="gray.600" mb={3}>
+          Odaberi metodu, sliku i korisnika
+        </Text>
+        {/* FILTERI */}
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          gap={4}
+          m={4}
+          p={4}
+          justifyContent="center"
+          align={{ base: "stretch", md: "flex-end" }}
+          bg="white"
+          borderRadius="2xl"
+          shadow="md"
+        >
+          {/* Filter po metodi */}
+          <Box flex="1">
+            <Text mb={1} fontWeight="semibold" color="gray.700">
+              Filtriraj po metodi
+            </Text>
+            <select
+              value={methodFilter}
+              onChange={(e) => setMethodFilter(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #CBD5E0",
+                backgroundColor: "#F7FAFC",
+                fontSize: "14px",
+              }}
+            >
+              <option value="">Sve metode</option>
+              {uniqueMethods.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </Box>
+
+          {/* Filter po slici */}
+          <Box flex="1">
+            <Text mb={1} fontWeight="semibold" color="gray.700">
+              Filtriraj po slici
+            </Text>
+            <select
+              value={imageFilter}
+              onChange={(e) => setImageFilter(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #CBD5E0",
+                backgroundColor: "#F7FAFC",
+                fontSize: "14px",
+              }}
+            >
+              <option value="">Sve slike</option>
+              {uniqueImages.map((filename) => (
+                <option key={filename} value={filename}>
+                  {filename}
+                </option>
+              ))}
+            </select>
+          </Box>
+
+          {/* Filter po korisniku */}
+          <Box flex="1">
+            <Text mb={1} fontWeight="semibold" color="gray.700">
+              Filtriraj po korisniku
+            </Text>
+            <select
+              value={userFilter}
+              onChange={(e) => setUserFilter(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #CBD5E0",
+                backgroundColor: "#F7FAFC",
+                fontSize: "14px",
+              }}
+            >
+              <option value="">Svi korisnici</option>
+              {uniqueUsers.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name}
+                </option>
+              ))}
+            </select>
+          </Box>
+        </Flex>
+      </Box>
 
       <Box bg="white" shadow="md" borderRadius="xl" p={4} mt={2}>
         {" "}
@@ -244,6 +370,36 @@ function AdminDashboard() {
               shadow="sm"
             >
               Učitaj još
+            </Button>
+          )}
+          {/* Gumb za reset filtera */}
+          {visibleCount < ratings.length && (
+            <Button
+              onClick={() => {
+                setMethodFilter("");
+                setUserFilter("");
+                setImageFilter("");
+              }}
+              mt={4}
+              ml={4}
+              bg="#a0b36f" // osnovna boja
+              color="black"
+              fontWeight="bold"
+              _hover={{
+                bg: "#7b904f", // tamnija verzija
+                transform: "scale(1.05)",
+                boxShadow: "md",
+              }}
+              _active={{
+                bg: "#7b904f", // ista tamnija boja pri kliku
+                transform: "scale(0.98)",
+              }}
+              borderRadius="xl"
+              px={6}
+              py={3}
+              shadow="sm"
+            >
+              Očisti filtere
             </Button>
           )}
           {/* Gumb za izvoz u CSV format */}
