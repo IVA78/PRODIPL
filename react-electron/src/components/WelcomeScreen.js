@@ -24,73 +24,95 @@ export default function WelcomeScreen() {
       return;
     }
     setShowError(false);
-    console.log('Submitted username:', username);
     navigate('/instructions');
   };
 
   return (
-    <Box minH="100vh" bg="#edf0da" display="flex" alignItems="center" justifyContent="center" p="4" position="relative">
+    <Box
+      minH="100vh"
+      bg="linear-gradient(to right, #c8cf9fff, #edf0da)"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      p="4"
+      position="relative"
+    >
+
       {showError && (
         <Box
           position="fixed"
           top="32px"
           left="50%"
           zIndex={9999}
-          style={{ transform: 'translateX(-50%)' }}
-          width="auto"
+          transform="translateX(-50%)"
+          w="90%"
           maxW="430px"
-          minW="280px"
         >
-          <Alert.Root status="error" borderRadius="md" pr="12">
+          <Alert.Root status="error" borderRadius="md" pr="12" bg="#ff6b6b">
             <Alert.Indicator />
-            <Alert.Title>Upišite svoje ime.</Alert.Title>
+            <Alert.Title color="white">Upišite svoje ime.</Alert.Title>
             <CloseButton
               onClick={() => setShowError(false)}
               position="absolute"
               right="8px"
               top="8px"
-              color="inherit"
+              color="white"
             />
           </Alert.Root>
         </Box>
       )}
 
-      <Container maxW="container.sm">
+      <Container maxW="container.md" px={{ base: 4, md: 0 }}>
         <Box
-          h="60vh"
-          bg="#0d5e4a"
+          bg="#f7f7f7ff"
           borderRadius="2xl"
-          p={["6", "8"]}
+          p={{ base: 6, md: 8 }}
           boxShadow="2xl"
-          maxW="60%"
+          w="100%"
+          maxW="700px"
           mx="auto"
         >
-          <VStack gap="6">
+          <VStack gap={8}>
+
             <Heading
-              fontSize="6xl"
-              color="#fff"
+              fontSize={{ base: "3xl", md: "5xl", lg: "6xl" }}
+              color="#1a202c"
               fontFamily="serif"
               fontWeight="400"
-              letterSpacing="wide"
-              mb="3.5"
+              textAlign="center"
             >
               Dobrodošli!
             </Heading>
 
-            <Box bg="#eef0e4ff" borderRadius="lg" p="4" w="45%" mb="2.5">
+            <Box
+              bg="#a0b36f"
+              borderRadius="lg"
+              p="4"
+              w={{ base: "100%", md: "80%", lg: "60%" }}
+            >
               <Box display="flex" alignItems="flex-start" mb="1" gap="2">
-                <BookOpen color="#2c5282" size={32} />
-                <Text color="#2c5282" fontSize="xl" fontWeight="bold" lineHeight="1.2">
+                <BookOpen color="#1a202c" size={28} />
+                <Text
+                  color="#1a202c"
+                  fontSize={{ base: "lg", md: "xl" }}
+                  fontWeight="bold"
+                  lineHeight="1.2"
+                >
                   Kratke upute
                 </Text>
               </Box>
-              <Text color="#2c5282" fontSize="md" lineHeight="1.6">
-                Ocijeniti ćete niz koloriziranih slika prema vizualnoj kvaliteti u usporedbi s originalom.
+              <Text color="#1a202c" fontSize={{ base: "sm", md: "md" }}>
+                Ocijenit ćete niz koloriziranih slika prema vizualnoj kvaliteti u usporedbi s originalom.
               </Text>
             </Box>
 
-            <Box w="40%">
-              <Text color="#eef0e4ff" mb="2" fontSize="xl" fontWeight="medium">
+            <Box w={{ base: "100%", md: "80%", lg: "60%" }}>
+              <Text
+                color="#1a202c"
+                mb="2"
+                fontSize={{ base: "lg", md: "xl" }}
+                fontWeight="medium"
+              >
                 Ime korisnika *
               </Text>
               <Input
@@ -100,39 +122,55 @@ export default function WelcomeScreen() {
                   if (showError) setShowError(false);
                 }}
                 bg="#eef0e4ff"
-                placeholder=""
                 size="lg"
                 borderRadius="md"
+                borderColor="#a0b36f"
               />
             </Box>
 
             <Button
-              w="25%"
-              bg="#3182ce"
-              color="#eef0e4ff"
+              w={{ base: "60%", md: "40%", lg: "30%" }}
+              bg="#a0b36f"
+              color="black"
               size="lg"
               fontWeight="bold"
-              fontSize="xl"
+              fontSize={{ base: "lg", md: "xl" }}
               borderRadius="2xl"
-              border="5px solid"
-              borderColor="#eef0e4ff"
-              _hover={{ bg: '#2c5282' }}
-              _active={{ bg: '#2c5282' }}
+              _hover={{ 
+                bg: "#7b904f",
+                transform: "scale(1.05)",
+                boxShadow: "md",
+              }}
+              _active={{ 
+                bg: "#7b904f",
+                transform: "scale(0.98)",
+              }}
               onClick={handleSubmit}
               py="6"
-              mb="3"
             >
               Predaj
             </Button>
 
-            <Box border="2px solid" borderColor="#e2e8f0" borderRadius="3xl" pt="3" pl="3" w="75%">
+            <Box
+              border="2px solid"
+              borderColor="#a0b36f"
+              borderRadius="3xl"
+              p="4"
+              w={{ base: "100%", md: "90%" }}
+              bg="#eef0e4ff"
+            >
               <Box display="flex" gap="4" alignItems="flex-start">
-                <Info size={50} color="#e2e8f0" />
-                <Text color="#e2e8f0" fontSize="xl" lineHeight="1.6">
+                <Info size={40} color="#a0b36f" />
+                <Text
+                  color="#183455ff"
+                  fontSize={{ base: "md", md: "lg" }}
+                  lineHeight="1.6"
+                >
                   Nakon predaje otvorit će se stranica s uputama. Pažljivo pročitajte upute jer nakon toga slijedi ocjenjivanje slika.
                 </Text>
               </Box>
             </Box>
+
           </VStack>
         </Box>
       </Container>
