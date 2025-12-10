@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
   Container,
@@ -10,15 +11,21 @@ import {
   Image as ChakraImage,
   AspectRatio,
 } from "@chakra-ui/react";
-import { Lightbulb, ArrowRight } from "lucide-react";
+import { Lightbulb, ArrowRight, CheckCircle } from "lucide-react";
 
 const imagePaths = ["/IMG_03.bmp", "/IMG_09.bmp", "/IMG_21.bmp"];
 
 export default function EvaluationScreen() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const currentIndex = location.state?.currentIndex || 0;
+  
   const [ratingA, setRatingA] = useState(null);
   const [ratingB, setRatingB] = useState(null);
   const [isPortrait, setIsPortrait] = useState(false);
+
+  const isLastPair = currentIndex === imagePaths.length - 1;
 
   const handleNext = () => {
     if (ratingA && ratingB) {
@@ -27,9 +34,27 @@ export default function EvaluationScreen() {
         B: ratingB,
         slika: imagePaths[currentIndex],
       });
+      
+      if (isLastPair) {
+        navigate("/summary", {
+          state: {
+            totalPairs: imagePaths.length,
+          },
+        });
+      } else {
+        const nextIndex = currentIndex + 1;
+        
+        navigate("/pause", {
+          state: {
+            completedPairs: currentIndex + 1,
+            totalPairs: imagePaths.length,
+            nextIndex: nextIndex,
+          },
+        });
+      }
+      
       setRatingA(null);
       setRatingB(null);
-      setCurrentIndex((cur) => (cur + 1) % imagePaths.length);
     }
   };
 
@@ -165,7 +190,12 @@ export default function EvaluationScreen() {
               </Text>
             </HStack>
             <Text fontSize={{ base: "sm", md: "lg" }} color="#1a202c" mb="1rem" fontWeight="medium">
-              Skala ocjenjivanja: 1 - Jako loše, 2 - Loše, 3 - Srednje, 4 - Dobro, 5 - Izvrsno
+              Skala ocjenjivanja:{" "}
+              <Text as="span" color="#7b904f" fontWeight="bold">1</Text> - Jako loše,{" "}
+              <Text as="span" color="#7b904f" fontWeight="bold">2</Text> - Loše,{" "}
+              <Text as="span" color="#7b904f" fontWeight="bold">3</Text> - Srednje,{" "}
+              <Text as="span" color="#7b904f" fontWeight="bold">4</Text> - Dobro,{" "}
+              <Text as="span" color="#7b904f" fontWeight="bold">5</Text> - Izvrsno
             </Text>
           </Box>
 
@@ -206,8 +236,18 @@ export default function EvaluationScreen() {
               py="6"
               mb="3"
             >
-              {!ratingA || !ratingB ? "Morate ocijeniti slike" : "Sljedeći par"}
-              {ratingA && ratingB && <ArrowRight size={30} style={{ marginLeft: "0.5rem" }} />}
+              {!ratingA || !ratingB 
+                ? "Ocijenite slike" 
+                : isLastPair 
+                  ? "Završi" 
+                  : "Sljedeći par"}
+              {ratingA && ratingB && (
+                isLastPair ? (
+                  <CheckCircle size={30} style={{ marginLeft: "0.5rem" }} />
+                ) : (
+                  <ArrowRight size={30} style={{ marginLeft: "0.5rem" }} />
+                )
+              )}
             </Button>
           </Box>
         </VStack>

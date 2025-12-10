@@ -11,10 +11,12 @@ import EvaluationScreen from "./components/EvaluationScreen";
 import SummaryScreen from "./components/SummaryScreen";
 import AdminDashboard from "./components/AdminDashboard";
 import PauseScreen from "./components/PauseScreen";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Navigate to="/welcome" />} />
         <Route path="/welcome" element={<WelcomeScreen />} />
