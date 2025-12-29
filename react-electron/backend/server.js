@@ -3,12 +3,15 @@ const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 const fs = require("fs");
 const cors = require("cors");
+const uuid = require("uuid");
 
 const app = express();
 const PORT = 3001;
 
 // --- CORS
 app.use(cors());
+
+app.use(express.json());
 
 // --- Posluživanje slika
 app.use("/images", express.static(path.join(__dirname, "images")));
@@ -72,6 +75,43 @@ app.get("/api/users", (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
+});
+
+
+// --- Zapis korisnika ---
+app.post("/api/users" , (req, res) => {
+  const { name } = req.body;
+
+  if (!name) return res.status(400).json({error: "Ime je obavezno"});
+
+  const userId = uuid.v4();
+
+  const query = `
+    INSERT INTO Users (id, name, role)
+    VALUES (?, ?, ?)
+  `
+
+  db.run(query, [userId, name.trim(), 'participant'], (err) => {
+    if (err){
+      console.error("Database error", err.message);
+      return res.status(500).json({error: err.message})
+    }
+
+    res.json({
+      success: true,
+      userId,
+      name,
+    });
+
+  // TODO: Dodati ovo u frontend,
+  //  kako bi se userId mogao posalati kod zapisa ocjena
+
+  // localStorage.setItem("userId", data.userId);
+
+  //ovo ce kasnije biti za bekend
+  // const userId = localStorage.getItem("userId");
+  });
+
 });
 
 // --- Dohvat slika ---
