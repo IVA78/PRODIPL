@@ -4,6 +4,7 @@ const sqlite3 = require("sqlite3").verbose();
 const fs = require("fs");
 const cors = require("cors");
 const uuid = require("uuid");
+const { error } = require("console");
 
 const app = express();
 const PORT = 3001;
@@ -155,6 +156,59 @@ app.get("/api/ratings", (req, res) => {
     res.json(rows);
   });
 });
+
+// --- Zapis ocjena ---
+app.post("/api/ratings", (req, res) => {
+  //TODO: na frontendu promijeniti da se ovo salje u req, a ne link na sliku
+  //ovako treba biti format 
+  const { ratingA, ratingB, idA, idB, userId } = req.body;
+
+  if (!userId || !idA || !idB) {
+    return res.status(400).json({error: "Nedostaju podatci"});
+  }
+
+
+  const ratingIdA = uuid.v4();
+  const ratingIdB = uuid.v4();
+  //TODO: dodaj ovo za time_ms
+  // id, user_id, image_id, score, time_ms? 
+  const query = `
+    INSERT INTO Ratings (id, user_id, image_id, score, time_ms )
+    VALUES (?, ?, ?, ? ,?)
+  ` 
+  db.serialize(() => {
+    db.run("BEGIN TRANSACTION");
+    // Sprema slike A
+    db.run(
+      query, 
+      [ratingIdA, userId, idA, ratingA, '0'], (err) =>{
+        if (err){
+          db.run("ROLLBACK");
+          return res.status(500).json({error: err.message});
+        }
+      });
+    // Sprema slike B
+    db.run(
+      query,
+      [ratingIdB, userId, idB, ratingB, '0'], (err) => {
+        if (err){
+          db.run("ROLLBACK");
+          return res.status(500).json({error: err.message});
+        }
+      });
+    // Ako nije bilo gresaka, zapisuje obe
+    db.run("COMMIT", () => {
+      res.json({
+        success: true,
+        ratings: [
+          { ratingId: ratingIdA, imageId: idA, score: ratingA },
+          { ratingId: ratingIdB, imageId: idB, score: ratingB },
+        ]
+      });
+    });
+  });
+});
+
 
 // --- Pokreni server ---
 app.listen(PORT, () => {
