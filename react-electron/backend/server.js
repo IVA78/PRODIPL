@@ -5,6 +5,7 @@ const fs = require("fs");
 const cors = require("cors");
 const uuid = require("uuid");
 const { error } = require("console");
+const { number } = require("framer-motion");
 
 const app = express();
 const PORT = 3001;
@@ -116,29 +117,84 @@ app.post("/api/users" , (req, res) => {
 });
 
 // --- Dohvat slika ---
+// app.get("/api/images", (req, res) => {
+//   const baseDir = path.join(__dirname, "images");
+
+//   try {
+//     const methods = fs.readdirSync(baseDir); // folders inside /images (original, grayscale, metodoA...)
+
+//     const result = methods.map((method) => {
+//       const methodDir = path.join(baseDir, method);
+//       const files = fs.readdirSync(methodDir);
+
+//       return {
+//         method,
+//         images: files.map((fname) => ({
+//           filename: fname,
+//           url: `http://localhost:3001/images/${method}/${fname}`,
+//         })),
+//       };
+//     });
+
+//     res.json(result);
+//   } catch (error) {
+//     console.error("Greška čitanja slika:", error);
+//     res.status(500).json({ error: "Ne mogu pročitati slike." });
+//   }
+// });
+
+// --- Dohvat slika grupiran po originalu ---
 app.get("/api/images", (req, res) => {
+
   const baseDir = path.join(__dirname, "images");
+  const originalDir = path.join(baseDir, "original"); //direktorij originalnih slika
+  const methodDirs = ["methodA", "methodB"]; //direktoriji koje gleda za verzije
+  const numberOfImages = 20 // koliko slika zelimo
 
   try {
-    const methods = fs.readdirSync(baseDir); // folders inside /images (original, grayscale, metodoA...)
+    let originals = fs.readdirSync(originalDir)
+      .filter(f => /\.(png|jpg|jpeg)$/i.test(f)); //provjera da je .jpg ili .png a ne npr .txt
 
-    const result = methods.map((method) => {
-      const methodDir = path.join(baseDir, method);
-      const files = fs.readdirSync(methodDir);
+
+    //samo 20 random slika saljemo
+    originals = originals.sort(() => Math.random() - 0.5);
+    originals = originals.slice(0,numberOfImages);
+
+    const pairs = originals.map((originalImage) => {
+      const baseName = path.parse(originalImage).name;
+
+      const original = {
+        filename: originalImage,
+        url: `http://localhost:3001/images/original/${originalImage}`,
+      };
+      const variants = {};
+
+      methodDirs.forEach((method) => {
+        const methodDir = path.join(baseDir, method);
+        const methodFiles = fs.readdirSync(methodDir);
+
+        //naziv slike treba zapoceti isto npr: image1.png i image1_colorized_methodA.png
+        const match = methodFiles.find((f) => f.startsWith(baseName));
+
+        if (match){
+          variants[method] = {
+            filename: match,
+            url: `http://localhost:3001/images/${method}/${match}`,
+          };
+        }
+      });
 
       return {
-        method,
-        images: files.map((fname) => ({
-          filename: fname,
-          url: `http://localhost:3001/images/${method}/${fname}`,
-        })),
-      };
+        baseName,
+        original,
+        variants
+      }
     });
 
-    res.json(result);
-  } catch (error) {
-    console.error("Greška čitanja slika:", error);
-    res.status(500).json({ error: "Ne mogu pročitati slike." });
+    res.json(pairs);
+  } catch (err){
+    console.error(err);
+    res.status(500).json({error: "Failed to load image"});
   }
 });
 
