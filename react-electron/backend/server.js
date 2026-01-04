@@ -153,45 +153,58 @@ app.get("/api/images", (req, res) => {
 
   try {
     let originals = fs.readdirSync(originalDir)
-      .filter(f => /\.(png|jpg|jpeg)$/i.test(f)); //provjera da je .jpg ili .png a ne npr .txt
+      .filter(f => /\.(png|jpg|jpeg)$/i.test(f)) //provjera da je .jpg ili .png a ne npr .txt
+      .sort(() => Math.random() - 0.5)
+      .slice(0,numberOfImages);
 
 
-    //samo 20 random slika saljemo
-    originals = originals.sort(() => Math.random() - 0.5);
-    originals = originals.slice(0,numberOfImages);
+    db.all("SELECT id, filename, method FROM Images", [], (err, rows) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({error: err.message});
+      }
 
-    const pairs = originals.map((originalImage) => {
-      const baseName = path.parse(originalImage).name;
+      const imageMap = {};
+      rows.forEach((row) => {
+        imageMap[`${row.method}|${row.filename}`] = row.id;
+      });
 
-      const original = {
-        filename: originalImage,
-        url: `http://localhost:3001/images/original/${originalImage}`,
-      };
-      const variants = {};
 
-      methodDirs.forEach((method) => {
-        const methodDir = path.join(baseDir, method);
-        const methodFiles = fs.readdirSync(methodDir);
+      const pairs = originals.map((originalImage) => {
+        const baseName = path.parse(originalImage).name;
 
-        //naziv slike treba zapoceti isto npr: image1.png i image1_colorized_methodA.png
-        const match = methodFiles.find((f) => f.startsWith(baseName));
+        const original = {
+          id: imageMap[`original|${originalImage}`],
+          filename: originalImage,
+          url: `http://localhost:3001/images/original/${originalImage}`,
+        };
+        const variants = {};
 
-        if (match){
-          variants[method] = {
-            filename: match,
-            url: `http://localhost:3001/images/${method}/${match}`,
-          };
+        methodDirs.forEach((method) => {
+          const methodDir = path.join(baseDir, method);
+          const methodFiles = fs.readdirSync(methodDir);
+
+          //naziv slike treba zapoceti isto npr: image1.png i image1_colorized_methodA.png
+          const match = methodFiles.find((f) => f.startsWith(baseName));
+
+          if (match){
+            variants[method] = {
+              if: imageMap[`${method}|${match}`],
+              filename: match,
+              url: `http://localhost:3001/images/${method}/${match}`,
+            };
+          }
+        });
+
+        return {
+          baseName,
+          original,
+          variants
         }
       });
 
-      return {
-        baseName,
-        original,
-        variants
-      }
+      res.json(pairs);
     });
-
-    res.json(pairs);
   } catch (err){
     console.error(err);
     res.status(500).json({error: "Failed to load image"});
