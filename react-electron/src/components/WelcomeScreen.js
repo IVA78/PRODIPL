@@ -11,21 +11,57 @@ import {
   Alert,
   CloseButton,
 } from '@chakra-ui/react';
-import { BookOpen, Info } from 'lucide-react';
+import { BookOpen, Info, User, Settings } from 'lucide-react';
 
 export default function WelcomeScreen() {
   const [username, setUsername] = useState('');
   const [showError, setShowError] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (username.trim() === '') {
       setShowError(true);
       return;
     }
-    setShowError(false);
-    navigate('/instructions');
+
+    try {
+      const response = await fetch("http://localhost:3001/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: username }),
+      });
+
+      if (!response.ok) {
+        throw new Error("API error");
+      }
+
+      const data = await response.json();
+
+      localStorage.setItem("userId", data.userId);
+      localStorage.setItem("username", data.name);
+      console.log('✅ Korisnik uspješno spremljen');
+
+      navigate("/instructions");
+    } catch (err) {
+      console.error("Backend error:", err);
+      setShowError(true);
+    }
   };
+
+  const handleGoToAdmin = () => {
+    navigate("/admin");
+  };
+
+  const AdminIcon = () => (
+    <Box position="relative" w="18px" h="18px">
+      <User size={18} />
+      <Box position="absolute" bottom="-4px" right="-6px">
+        <Settings size={12} />
+      </Box>
+    </Box>
+  );
 
   return (
     <Box
@@ -37,7 +73,23 @@ export default function WelcomeScreen() {
       p="4"
       position="relative"
     >
-
+      <Button
+        onClick={handleGoToAdmin}
+        position="absolute"
+        top={{ base: "8px", sm: "12px", md: "24px" }}
+        right={{ base: "50%", sm: "32px", md: "56px" }}
+        transform={{ base: "translateX(50%)", sm: "none" }}
+        zIndex={10}
+        size={{ base: "xs", md: "sm" }}
+        px={{ base: 3, md: 4 }}
+        bg="#a0b36f"
+        color="black"
+        borderRadius="full"
+        _hover={{ bg: "#7b904f", transform: { base: "translateX(50%) scale(1.05)", sm: "scale(1.05)" } }}
+        _active={{ bg: "#7b904f", transform: { base: "translateX(50%) scale(0.98)", sm: "scale(0.98)" } }}
+      >
+        <AdminIcon />
+      </Button>
       {showError && (
         <Box
           position="fixed"
@@ -73,7 +125,6 @@ export default function WelcomeScreen() {
           mx="auto"
         >
           <VStack gap={8}>
-
             <Heading
               fontSize={{ base: "3xl", md: "5xl", lg: "6xl" }}
               color="#1a202c"
@@ -136,12 +187,12 @@ export default function WelcomeScreen() {
               fontWeight="bold"
               fontSize={{ base: "lg", md: "xl" }}
               borderRadius="2xl"
-              _hover={{ 
+              _hover={{
                 bg: "#7b904f",
                 transform: "scale(1.05)",
                 boxShadow: "md",
               }}
-              _active={{ 
+              _active={{
                 bg: "#7b904f",
                 transform: "scale(0.98)",
               }}
@@ -170,7 +221,6 @@ export default function WelcomeScreen() {
                 </Text>
               </Box>
             </Box>
-
           </VStack>
         </Box>
       </Container>

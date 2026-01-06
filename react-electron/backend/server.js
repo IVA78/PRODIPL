@@ -189,7 +189,7 @@ app.get("/api/images", (req, res) => {
 
           if (match){
             variants[method] = {
-              if: imageMap[`${method}|${match}`],
+              id: imageMap[`${method}|${match}`],
               filename: match,
               url: `http://localhost:3001/images/${method}/${match}`,
             };
@@ -230,7 +230,7 @@ app.get("/api/ratings", (req, res) => {
 app.post("/api/ratings", (req, res) => {
   //TODO: na frontendu promijeniti da se ovo salje u req, a ne link na sliku
   //ovako treba biti format 
-  const { ratingA, ratingB, idA, idB, userId } = req.body;
+  const { ratingA, ratingB, idA, idB, userId, time_ms } = req.body;
 
   if (!userId || !idA || !idB) {
     return res.status(400).json({error: "Nedostaju podatci"});
@@ -250,7 +250,7 @@ app.post("/api/ratings", (req, res) => {
     // Sprema slike A
     db.run(
       query, 
-      [ratingIdA, userId, idA, ratingA, '0'], (err) =>{
+      [ratingIdA, userId, idA, ratingA, time_ms || '0'], (err) =>{
         if (err){
           db.run("ROLLBACK");
           return res.status(500).json({error: err.message});
@@ -259,7 +259,7 @@ app.post("/api/ratings", (req, res) => {
     // Sprema slike B
     db.run(
       query,
-      [ratingIdB, userId, idB, ratingB, '0'], (err) => {
+      [ratingIdB, userId, idB, ratingB, time_ms || '0'], (err) => {
         if (err){
           db.run("ROLLBACK");
           return res.status(500).json({error: err.message});
