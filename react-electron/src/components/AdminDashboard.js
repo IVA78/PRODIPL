@@ -11,6 +11,7 @@ import {
   FormatNumber,
   Image,
   Button,
+  IconButton,
 } from "@chakra-ui/react";
 
 import {
@@ -23,6 +24,9 @@ import {
   ScatterChart,
   Scatter,
 } from "recharts";
+
+import { useNavigate } from "react-router-dom";
+import { FaHome } from "react-icons/fa";
 
 function AdminDashboard() {
   const [users, setUsers] = useState([]);
@@ -47,6 +51,12 @@ function AdminDashboard() {
 
   // Onda prikaži samo dio
   const visibleRatings = filteredRatings.slice(0, visibleCount);
+
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate("/welcome"); // vodi na /welcome
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -169,16 +179,26 @@ function AdminDashboard() {
 
   return (
     <Box p={8} bg="linear-gradient(to right, #d9dfb6, #edf0da)" minH="100vh">
-      <Box
-        bg="white"
-        shadow="lg"
-        borderRadius="2xl"
-        p={6}
-        mb={2}
-        textAlign="center"
-      >
-        <Heading size="2xl">📊 Evaluacija kolorizacije</Heading>
-        <Text color="gray.600">Pregled korisnika, slika i ocjena</Text>
+      <Box bg="white" shadow="lg" borderRadius="2xl" p={6} mb={2}>
+        <Flex align="center" justify="space-between">
+          <Box textAlign="left">
+            <Heading size="2xl">📊 Evaluacija kolorizacije</Heading>
+            <Text color="gray.600">Pregled korisnika, slika i ocjena</Text>
+          </Box>
+
+          <IconButton
+            aria-label="Go to Welcome"
+            as={FaHome} // koristi komponentu direktno
+            fontSize="24px" // veličina
+            onClick={handleClick}
+            variant="solid"
+            size={{ base: "xs", md: "sm" }}
+            padding={1}
+            bg="#a0b36f"
+            color="black"
+            borderRadius="full"
+          />
+        </Flex>
       </Box>
 
       <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={8}>
@@ -468,7 +488,7 @@ function AdminDashboard() {
       <Box bg="white" shadow="md" borderRadius="xl" p={4} mt={2}>
         <Heading>Vizualizacije</Heading>
         <SimpleGrid p={10} m={5} columns={{ base: 1, md: 1, lg: 2 }}>
-          <Box w="100%" h={{ base: "300px", md: "500px" }} p={5}>
+          <Box w="100%" h={{ base: "300px", md: "500px" }} p={45}>
             <Heading>Prosječna ocjena po metodi</Heading>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={aggregatedData}>
@@ -480,7 +500,7 @@ function AdminDashboard() {
             </ResponsiveContainer>
           </Box>
 
-          <Box w="100%" h={{ base: "300px", md: "500px" }} p={5}>
+          <Box w="100%" h={{ base: "300px", md: "500px" }} p={45}>
             <Heading>Raspon ocjena po slici</Heading>
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart>
@@ -492,7 +512,7 @@ function AdminDashboard() {
                       x={x}
                       y={y + 10}
                       textAnchor="end"
-                      transform={`rotate(-45, ${x}, ${y})`}
+                      transform={`rotate(45, ${x}, ${y})`}
                       fontSize={12}
                     >
                       {uniqueImages[payload.value]}
