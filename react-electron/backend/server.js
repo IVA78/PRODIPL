@@ -79,24 +79,23 @@ app.get("/api/users", (req, res) => {
   });
 });
 
-
 // --- Zapis korisnika ---
-app.post("/api/users" , (req, res) => {
+app.post("/api/users", (req, res) => {
   const { name } = req.body;
 
-  if (!name) return res.status(400).json({error: "Ime je obavezno"});
+  if (!name) return res.status(400).json({ error: "Ime je obavezno" });
 
   const userId = uuid.v4();
 
   const query = `
     INSERT INTO Users (id, name, role)
     VALUES (?, ?, ?)
-  `
+  `;
 
-  db.run(query, [userId, name.trim(), 'participant'], (err) => {
-    if (err){
+  db.run(query, [userId, name.trim(), "participant"], (err) => {
+    if (err) {
       console.error("Database error", err.message);
-      return res.status(500).json({error: err.message})
+      return res.status(500).json({ error: err.message });
     }
 
     res.json({
@@ -105,15 +104,14 @@ app.post("/api/users" , (req, res) => {
       name,
     });
 
-  // TODO: Dodati ovo u frontend,
-  //  kako bi se userId mogao posalati kod zapisa ocjena
+    // TODO: Dodati ovo u frontend,
+    //  kako bi se userId mogao posalati kod zapisa ocjena
 
-  // localStorage.setItem("userId", data.userId);
+    // localStorage.setItem("userId", data.userId);
 
-  //ovo ce kasnije biti za bekend
-  // const userId = localStorage.getItem("userId");
+    //ovo ce kasnije biti za bekend
+    // const userId = localStorage.getItem("userId");
   });
-
 });
 
 // --- Dohvat slika ---
@@ -145,30 +143,28 @@ app.post("/api/users" , (req, res) => {
 
 // --- Dohvat slika grupiran po originalu ---
 app.get("/api/images", (req, res) => {
-
   const baseDir = path.join(__dirname, "images");
   const originalDir = path.join(baseDir, "original"); //direktorij originalnih slika
-  const methodDirs = ["methodA", "methodB"]; //direktoriji koje gleda za verzije
-  const numberOfImages = 20 // koliko slika zelimo
+  const methodDirs = ["methodA"]; //direktoriji koje gleda za verzije
+  const numberOfImages = 20; // koliko slika zelimo
 
   try {
-    let originals = fs.readdirSync(originalDir)
-      .filter(f => /\.(png|jpg|jpeg)$/i.test(f)) //provjera da je .jpg ili .png a ne npr .txt
+    let originals = fs
+      .readdirSync(originalDir)
+      .filter((f) => /\.(png|jpg|jpeg)$/i.test(f)) //provjera da je .jpg ili .png a ne npr .txt
       .sort(() => Math.random() - 0.5)
-      .slice(0,numberOfImages);
-
+      .slice(0, numberOfImages);
 
     db.all("SELECT id, filename, method FROM Images", [], (err, rows) => {
       if (err) {
         console.error("Database error:", err);
-        return res.status(500).json({error: err.message});
+        return res.status(500).json({ error: err.message });
       }
 
       const imageMap = {};
       rows.forEach((row) => {
         imageMap[`${row.method}|${row.filename}`] = row.id;
       });
-
 
       const pairs = originals.map((originalImage) => {
         const baseName = path.parse(originalImage).name;
@@ -187,7 +183,7 @@ app.get("/api/images", (req, res) => {
           //naziv slike treba zapoceti isto npr: image1.png i image1_colorized_methodA.png
           const match = methodFiles.find((f) => f.startsWith(baseName));
 
-          if (match){
+          if (match) {
             variants[method] = {
               id: imageMap[`${method}|${match}`],
               filename: match,
@@ -199,15 +195,15 @@ app.get("/api/images", (req, res) => {
         return {
           baseName,
           original,
-          variants
-        }
+          variants,
+        };
       });
 
       res.json(pairs);
     });
-  } catch (err){
+  } catch (err) {
     console.error(err);
-    res.status(500).json({error: "Failed to load image"});
+    res.status(500).json({ error: "Failed to load image" });
   }
 });
 
@@ -229,42 +225,37 @@ app.get("/api/ratings", (req, res) => {
 // --- Zapis ocjena ---
 app.post("/api/ratings", (req, res) => {
   //TODO: na frontendu promijeniti da se ovo salje u req, a ne link na sliku
-  //ovako treba biti format 
+  //ovako treba biti format
   const { ratingA, ratingB, idA, idB, userId, time_ms } = req.body;
 
   if (!userId || !idA || !idB) {
-    return res.status(400).json({error: "Nedostaju podatci"});
+    return res.status(400).json({ error: "Nedostaju podatci" });
   }
-
 
   const ratingIdA = uuid.v4();
   const ratingIdB = uuid.v4();
   //TODO: dodaj ovo za time_ms
-  // id, user_id, image_id, score, time_ms? 
+  // id, user_id, image_id, score, time_ms?
   const query = `
     INSERT INTO Ratings (id, user_id, image_id, score, time_ms )
     VALUES (?, ?, ?, ? ,?)
-  ` 
+  `;
   db.serialize(() => {
     db.run("BEGIN TRANSACTION");
     // Sprema slike A
-    db.run(
-      query, 
-      [ratingIdA, userId, idA, ratingA, time_ms || '0'], (err) =>{
-        if (err){
-          db.run("ROLLBACK");
-          return res.status(500).json({error: err.message});
-        }
-      });
+    db.run(query, [ratingIdA, userId, idA, ratingA, time_ms || "0"], (err) => {
+      if (err) {
+        db.run("ROLLBACK");
+        return res.status(500).json({ error: err.message });
+      }
+    });
     // Sprema slike B
-    db.run(
-      query,
-      [ratingIdB, userId, idB, ratingB, time_ms || '0'], (err) => {
-        if (err){
-          db.run("ROLLBACK");
-          return res.status(500).json({error: err.message});
-        }
-      });
+    db.run(query, [ratingIdB, userId, idB, ratingB, time_ms || "0"], (err) => {
+      if (err) {
+        db.run("ROLLBACK");
+        return res.status(500).json({ error: err.message });
+      }
+    });
     // Ako nije bilo gresaka, zapisuje obe
     db.run("COMMIT", () => {
       res.json({
@@ -272,12 +263,11 @@ app.post("/api/ratings", (req, res) => {
         ratings: [
           { ratingId: ratingIdA, imageId: idA, score: ratingA },
           { ratingId: ratingIdB, imageId: idB, score: ratingB },
-        ]
+        ],
       });
     });
   });
 });
-
 
 // --- Pokreni server ---
 app.listen(PORT, () => {
