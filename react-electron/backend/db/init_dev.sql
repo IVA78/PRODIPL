@@ -56,14 +56,34 @@ CREATE TABLE IF NOT EXISTS Images (
     method TEXT NOT NULL
 );
 
--- Ubacivanje testnih slika
+-- Ubacivanje slika
 INSERT OR IGNORE INTO Images (id, filename, method) VALUES 
-('img-uuid-1', 'image1.png', 'original'),
-('img-uuid-2', 'image1_bw.png', 'grayscale'),
-('img-uuid-3', 'image1_colorized_methodA.png', 'methodA'),
-('img-uuid-4', 'image2.png', 'original'),
-('img-uuid-5', 'image2_bw.png', 'grayscale'),
-('img-uuid-6', 'image2_colorized_methodB.png', 'methodB');
+('img-uuid-1', '0807.png', 'original'),
+('img-uuid-2', '0821.png', 'original'),
+('img-uuid-3', '0833.png', 'original'),
+('img-uuid-4', '0844.png', 'original'),
+('img-uuid-5', '0882.png', 'original'),
+('img-uuid-6', 'ILSVRC2012_val_00041580.JPEG', 'original'),
+('img-uuid-7', 'ILSVRC2012_val_00046524.JPEG', 'original'),
+('img-uuid-8', 'ILSVRC2012_val_00046834.JPEG', 'original'),
+('img-uuid-9', '0807.png', 'methodA'),
+('img-uuid-10', '0821.png', 'methodA'),
+('img-uuid-11', '0833.png', 'methodA'),
+('img-uuid-12', '0844.png', 'methodA'),
+('img-uuid-13', '0882.png', 'methodA'),
+('img-uuid-14', 'ILSVRC2012_val_00041580.png', 'methodA'),
+('img-uuid-15', 'ILSVRC2012_val_00046524.png', 'methodA'),
+('img-uuid-16', 'ILSVRC2012_val_00046834.png', 'methodA'),
+('img-uuid-17', '0807.png', 'methodB'),
+('img-uuid-18', '0821.png', 'methodB'),
+('img-uuid-19', '0833.png', 'methodB'),
+('img-uuid-20', '0844.png', 'methodB'),
+('img-uuid-21', '0882.png', 'methodB'),
+('img-uuid-22', 'ILSVRC2012_val_00041580.JPEG', 'methodB'),
+('img-uuid-23', 'ILSVRC2012_val_00046524.JPEG', 'methodB'),
+('img-uuid-24', 'ILSVRC2012_val_00046834.JPEG', 'methodB');
+
+
 
 -- ----- RATINGS -----
 CREATE TABLE IF NOT EXISTS Ratings (
