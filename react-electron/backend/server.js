@@ -145,7 +145,7 @@ app.post("/api/users", (req, res) => {
 app.get("/api/images", (req, res) => {
   const baseDir = path.join(__dirname, "images");
   const originalDir = path.join(baseDir, "original"); //direktorij originalnih slika
-  const methodDirs = ["methodA"]; //direktoriji koje gleda za verzije
+  const methodDirs = ["methodA", "methodB", "methodC"]; //direktoriji koje gleda za verzije
   const numberOfImages = 20; // koliko slika zelimo
 
   try {

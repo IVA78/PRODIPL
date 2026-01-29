@@ -56,7 +56,15 @@ INSERT OR IGNORE INTO Images (id, filename, method) VALUES
 ('img-uuid-21', '0882.png', 'methodB'),
 ('img-uuid-22', 'ILSVRC2012_val_00041580.JPEG', 'methodB'),
 ('img-uuid-23', 'ILSVRC2012_val_00046524.JPEG', 'methodB'),
-('img-uuid-24', 'ILSVRC2012_val_00046834.JPEG', 'methodB');
+('img-uuid-24', 'ILSVRC2012_val_00046834.JPEG', 'methodB'),
+('img-uuid-25', '0807.png', 'methodC'),
+('img-uuid-26', '0821.png', 'methodC'),
+('img-uuid-27', '0833.png', 'methodC'),
+('img-uuid-28', '0844.png', 'methodC'),
+('img-uuid-29', '0882.png', 'methodC'),
+('img-uuid-30', 'ILSVRC2012_val_00041580.JPEG', 'methodC'),
+('img-uuid-31', 'ILSVRC2012_val_00046524.JPEG', 'methodC'),
+('img-uuid-32', 'ILSVRC2012_val_00046834.JPEG', 'methodC');
 
 
 
